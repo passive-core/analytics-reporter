@@ -4,6 +4,9 @@ FROM node:18-alpine
 # Create & switch to app directory
 WORKDIR /usr/src/app
 
+# Let Cloud Run choose the port
+ENV PORT 8080
+
 # Copy package manifests and install dependencies
 COPY package*.json ./
 RUN npm ci --only=production
@@ -11,8 +14,8 @@ RUN npm ci --only=production
 # Copy the rest of your source
 COPY . .
 
-# Expose your service’s port
-EXPOSE 8080
+# Expose the port
+EXPOSE $PORT
 
-# Run the built app
+# Run the application
 CMD ["node", "src/index.js"]
