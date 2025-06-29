@@ -18,4 +18,4 @@ COPY . .
 EXPOSE $PORT
 
 # Run the application
-CMD ["node", "src/index.js"]
+CMD ["node", "index.js"]
