@@ -1,0 +1,8 @@
+{
+  "short_name": "Analytics",
+  "name": "Analytics Reporter",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "Your analytics dashboard"
+}

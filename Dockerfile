@@ -1,21 +1,15 @@
-# Use the official Node.js 18 image.
-FROM node:18-alpine
-
-# Create & switch to app directory
+# 1) Build stage: compile your React app
+FROM node:18-alpine AS build
 WORKDIR /usr/src/app
-
-# Let Cloud Run choose the port
-ENV PORT 8080
-
-# Copy package manifests and install dependencies
 COPY package*.json ./
-RUN npm ci --only=production
-
-# Copy the rest of your source
+RUN npm ci
 COPY . .
+RUN npm run build
 
-# Expose the port
-EXPOSE $PORT
-
-# Run the application
-CMD ["node", "index.js"]
+# 2) Serve stage: install 'serve' and publish the compiled static site
+FROM node:18-alpine
+WORKDIR /usr/src/app
+RUN npm install -g serve
+COPY --from=build /usr/src/app/build ./build
+EXPOSE 8080
+CMD ["serve", "-s", "build", "-l", "8080"]
