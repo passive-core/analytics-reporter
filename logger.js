@@ -1,9 +1,10 @@
 // logger.js
 const pino = require('pino');
 
+// Create a Pino logger instance
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  timestamp: pino.stdTimeFunctions.isoTime,
+  prettyPrint: process.env.NODE_ENV !== 'production'
 });
 
-module.exports = { logger };
+module.exports = logger;
