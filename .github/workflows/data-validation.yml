@@ -3,8 +3,8 @@ name: BigQuery Data Validation
 on:
   pull_request:
     paths:
-      - "**/*.sql"
-      - ".github/workflows/data-validation.yml"
+      - '**/*.sql'
+      - '.github/workflows/data-validation.yml'
 
 jobs:
   validate:
@@ -22,8 +22,7 @@ jobs:
 
       - name: Install BigQuery CLI
         run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-sdk-bigquery
+          gcloud components install bq --quiet
 
       - name: Run validation query
         run: |
