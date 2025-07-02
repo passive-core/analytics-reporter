@@ -3,8 +3,8 @@ name: BigQuery Data Validation
 on:
   pull_request:
     paths:
-      - '**/*.sql'
-      - '.github/workflows/data-validation.yml'
+      - "**/*.sql"
+      - ".github/workflows/data-validation.yml"
 
 jobs:
   validate:
@@ -17,12 +17,8 @@ jobs:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
-          # your GCP service-account key (full JSON) stored in this secret
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Install BigQuery CLI
-        run: |
-          gcloud components install bq --quiet
+          install_components: bq
 
       - name: Run validation query
         run: |
