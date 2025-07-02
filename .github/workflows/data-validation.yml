@@ -14,11 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v1
+      - name: Authenticate & install BigQuery CLI
+        uses: google-github-actions/setup-gcloud@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          project_id: neuraflow-e32ab
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
           install_components: bq
+          export_default_credentials: true
 
       - name: Run validation query
         run: |
