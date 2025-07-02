@@ -15,22 +15,21 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Authenticate to GCP
-        run: |
-          echo "${{ secrets.GCP_SA_KEY }}" > /tmp/sa.json
-          gcloud auth activate-service-account --key-file=/tmp/sa.json
-          gcloud config set project neuraflow-e32ab
-      # ↑ Now we activate the SA and set the project before anything else.
+        uses: google-github-actions/auth@v1
+        with:
+          # your GCP service-account key (full JSON) stored in this secret
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Install BigQuery CLI
         run: |
-          gcloud components install bq --quiet       
-          # ↑ Use `gcloud components install bq` instead of `apt-get`.
+          gcloud components install bq --quiet
 
       - name: Run validation query
         run: |
           bq query --nouse_legacy_sql \
             'SELECT COUNT(*) AS row_count FROM `neuraflow-e32ab.my_dataset.my_table`;' \
             > validation.txt
+
           ROWS=$(tail -n +3 validation.txt | awk '{print $1}')
           if [[ "$ROWS" -lt 1 ]]; then
             echo "❌ No rows found in my_table!"
