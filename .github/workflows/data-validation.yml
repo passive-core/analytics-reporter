@@ -3,34 +3,47 @@ name: BigQuery Data Validation
 on:
   pull_request:
     paths:
-      - "**/*.sql"
-      - ".github/workflows/data-validation.yml"
+      - '**/*.sql'
+      - '.github/workflows/data-validation.yml'
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-
     steps:
+      # 1) Check out your SQL & workflow
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Authenticate & install BigQuery CLI
-        uses: google-github-actions/setup-gcloud@v1
+      # 2) Authenticate to GCP using your service‐account JSON stored in secrets
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
         with:
-          project_id: neuraflow-e32ab
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          install_components: bq
-          export_default_credentials: true
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
+      # 3) Make sure gcloud is pointing at the right project
+      - name: Set GCP project
+        run: |
+          gcloud config set project neuraflow-e32ab
+
+      # 4) Install the BigQuery CLI (bq)
+      - name: Install BigQuery CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-cloud-cli
+
+      # 5) Run your validation query and fail if no rows
       - name: Run validation query
         run: |
           bq query --nouse_legacy_sql \
             'SELECT COUNT(*) AS row_count FROM `neuraflow-e32ab.my_dataset.my_table`;' \
             > validation.txt
 
+          # extract the number from the output
           ROWS=$(tail -n +3 validation.txt | awk '{print $1}')
+
           if [[ "$ROWS" -lt 1 ]]; then
             echo "❌ No rows found in my_table!"
             exit 1
           fi
+
           echo "✅ Found $ROWS rows in my_table."
