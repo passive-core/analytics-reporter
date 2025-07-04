@@ -40,3 +40,4 @@ jobs:
           fi
 
           echo "✅ Found $ROWS rows in YOUR_TABLE."
+
