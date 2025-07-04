@@ -13,22 +13,29 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2) Authenticate to GCP using your secret
+      # 2) Authenticate to GCP with your secret
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
+          # inject the full JSON blob you stored as GCP_SA_KEY
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
--       'SELECT COUNT(*) AS row_count FROM `neuralflow-e32ab.my_dataset.my_table`;'
-+       'SELECT COUNT(*) AS row_count FROM `neuralflow-e32ab.dns_logs.validation_test`;
+      # 3) Run the count query
+      - name: Run validation query
+        run: |
+          bq query --nouse_legacy_sql \
+            'SELECT COUNT(*) AS row_count
+             FROM `dns_logs.validation_test`;' \
+            > validation.txt
 
-          # grab the numeric result out of BQ’s multi-line output
-          ROWS=$(tail -n +3 validation.txt | awk '{ print $1 }')
+          # show the raw output for debugging
+          echo "===== RAW BQ OUTPUT ====="
+          cat validation.txt
+          echo "========================="
 
+          ROWS=$(tail -n +3 validation.txt | awk '{print $1}')
           if [[ "$ROWS" -lt 1 ]]; then
             echo "❌ No rows found in validation_test!"
             exit 1
           fi
-
           echo "✅ Found $ROWS rows in validation_test."
-
