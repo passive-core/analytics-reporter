@@ -19,13 +19,8 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # 3) Run the BigQuery count
-      - name: Run validation query
-        run: |
-          bq query --nouse_legacy_sql \
-            'SELECT COUNT(*) AS row_count
-             FROM `neuralflow-e32ab.dns_logs.validation_test`;' \
-            > validation.txt
+-       'SELECT COUNT(*) AS row_count FROM `neuralflow-e32ab.my_dataset.my_table`;'
++       'SELECT COUNT(*) AS row_count FROM `neuralflow-e32ab.dns_logs.validation_test`;
 
           # grab the numeric result out of BQ’s multi-line output
           ROWS=$(tail -n +3 validation.txt | awk '{ print $1 }')
