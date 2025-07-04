@@ -5,8 +5,8 @@ on:
     paths:
       - "**/*.sql"
       - ".github/workflows/data-validation.yml"
-      
 
+      
 jobs:
   validate:
     runs-on: ubuntu-latest
