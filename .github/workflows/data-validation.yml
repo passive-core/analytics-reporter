@@ -17,7 +17,7 @@ jobs:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
-          # inject the full JSON blob you stored in GCP_SA_KEY
+          # inject the full JSON blob you stored as GCP_SA_KEY
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       # 3) Run the count query
@@ -32,7 +32,7 @@ jobs:
           cat validation.txt
           echo "========================="
 
-          # grab the numeric result out of BQ's multi-line output
+          # grab the numeric result out of BQ’s multi-line output
           ROWS=$(tail -n +3 validation.txt | awk '{print $1}')
           if [[ "$ROWS" -lt 1 ]]; then
             echo "❌ No rows found in validation_test!"
