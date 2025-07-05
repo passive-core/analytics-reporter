@@ -9,37 +9,38 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      # 1) Check out the code
+      # 1) Check out your repo
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2) Authenticate to GCP using your secret
+      # 2) Authenticate to GCP
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
-          # inject the full JSON blob you stored in GCP_SA_KEY
+          # inject the full JSON key you stored in your repo secret
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # 3) Run the count query
-           - name: Run validation query
+      # 3) Run the row‐count query
+      - name: Run validation query
         run: |
+          # execute the COUNT(*) query into a file
           bq query --nouse_legacy_sql \
             'SELECT COUNT(*) AS row_count FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
             > validation.txt
 
-          # show the raw output
+          # show the raw output for debugging
           echo "===== RAW BQ OUTPUT ====="
           cat validation.txt
           echo "========================="
 
-          # grab the numeric result out of BQ’s multi-line output
--         ROWS=$(tail -n +3 validation.txt | awk '{print $1}')
-+         # take the very last line (which is just the count) and pull its first column
-+         ROWS=$(tail -n 1 validation.txt | awk '{print $1}')
+          # grab just the last line (the numeric count)…
+          ROWS=$(tail -n 1 validation.txt | awk '{print $1}')
 
+          # …and fail if it’s zero or empty
           if [[ "$ROWS" -lt 1 ]]; then
             echo "❌ No rows found in validation_test!"
             exit 1
           fi
 
+          # success
           echo "✅ Found $ROWS rows in validation_test."
