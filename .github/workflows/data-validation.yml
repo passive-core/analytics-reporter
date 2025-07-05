@@ -26,18 +26,18 @@ jobs:
       # 3) Run the count query
       - name: Run validation query
         run: |
-          bq --project_id=neuralflow-e32ab query \
+          bq --project_id=neuraflow-e32ab query \
             --nouse_legacy_sql \
             --format=csv \
-            'SELECT COUNT(*) AS row_count
-             FROM `neuralflow-e32ab.dns_logs.validation_test`;' \
-            > validation.csv
+            'SELECT COUNT(*) AS row_count FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
+            > validation.csv || true
+
       # 4) Dump raw BQ output for debugging
       - name: Dump raw BQ output
         run: |
           echo "===== RAW BQ OUTPUT (CSV + ERRORS) ====="
           cat validation.csv 2>&1 || true
-          echo "========================================"
+          echo "======================================="
 
       # 5) Parse out the numeric count (skip header)
       - name: Parse count
@@ -48,12 +48,12 @@ jobs:
       # 6) Fail if < 1
       - name: Fail if no rows
         run: |
-          if [[ -z "$ROWS" || "$ROWS" -lt 1 ]]; then
+          if [[ -z "$ROWS" || $ROWS -lt 1 ]]; then
             echo "❌ No rows found in validation_test!"
             exit 1
           fi
 
-      # 7) Success
+      # 7) Report success
       - name: Report success
         run: |
           echo "✅ Found $ROWS rows in validation_test."
