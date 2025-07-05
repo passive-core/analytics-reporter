@@ -5,12 +5,11 @@ on:
     branches:
       - main
     paths:
-      - '.github/workflows/data-validation.yml'
+      - .github/workflows/data-validation.yml
   pull_request:
     paths:
-      - '.github/workflows/data-validation.yml'
+      - .github/workflows/data-validation.yml
   workflow_dispatch:
-
 
 jobs:
   validate:
@@ -21,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2) Authenticate to GCP using your secret
+      # 2) Authenticate to GCP using your full-service-account JSON in a secret
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
@@ -30,23 +29,30 @@ jobs:
       # 3) Run the count query
       - name: Run validation query
         run: |
-          bq query \
+          # Execute COUNT in CSV mode, specifying project explicitly
+          bq \
+            --project_id=${{ env.GCP_PROJECT }} \
+            query \
             --nouse_legacy_sql \
             --format=csv \
             'SELECT COUNT(*) AS row_count
-             FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
+             FROM `neuralflow-e32ab.dns_logs.validation_test`;' \
             > validation.csv
 
+          # 4) Dump raw BQ output for debugging
           echo "===== RAW BQ OUTPUT (CSV) ====="
-          cat validation.csv
+          cat validation.csv || true
           echo "==============================="
 
+          # 5) Parse out the numeric count (skip header)
           ROWS=$(tail -n +2 validation.csv | head -1)
           echo "Parsed ROWS=$ROWS"
 
-          if [[ "$ROWS" -lt 1 ]]; then
+          # 6) Fail if < 1
+          if [[ -z "$ROWS" || "$ROWS" -lt 1 ]]; then
             echo "❌ No rows found in validation_test!"
             exit 1
           fi
 
+          # 7) Success
           echo "✅ Found $ROWS rows in validation_test."
