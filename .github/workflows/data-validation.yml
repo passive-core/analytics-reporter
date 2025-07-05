@@ -22,7 +22,7 @@ jobs:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       # 3) Run the count query
-        - name: Run validation query
+      - name: Run validation query
         run: |
           # run the count in CSV mode (no headers, no prompts):
           bq query \
@@ -37,7 +37,7 @@ jobs:
           cat validation.csv
           echo "==============================="
 
-          # skip the header line, grab the first data line
+          # skip the header, grab the first data line
           ROWS=$(tail -n +2 validation.csv | head -1)
           echo "Parsed ROWS=$ROWS"
 
@@ -47,4 +47,3 @@ jobs:
           fi
 
           echo "✅ Found $ROWS rows in validation_test."
-    
