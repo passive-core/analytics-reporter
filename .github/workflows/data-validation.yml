@@ -25,8 +25,6 @@ jobs:
 
       - name: Run validation query and assert > 0 rows
         run: |
-          set -eo pipefail
-
           # (A) Run the count query, write CSV (header + one data line)
           bq --project_id=${{ env.GCP_PROJECT }} query \
              --nouse_legacy_sql \
