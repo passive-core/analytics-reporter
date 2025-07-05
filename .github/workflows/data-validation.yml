@@ -37,7 +37,7 @@ jobs:
           cat validation.csv
           echo "==============================="
 
-          # skip the header, grab the first data line
+          # skip the header line, grab the first data line
           ROWS=$(tail -n +2 validation.csv | head -1)
           echo "Parsed ROWS=$ROWS"
 
