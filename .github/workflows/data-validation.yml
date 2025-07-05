@@ -4,11 +4,11 @@ on:
   push:
     branches:
       - main
-
-  pull_request:
     paths:
       - '.github/workflows/data-validation.yml'
-
+  pull_requests
+   paths:
+      - '.github/workflows/data-validation.yml'
   workflow_dispatch: {}
 
 
