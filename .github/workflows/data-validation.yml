@@ -37,7 +37,8 @@ jobs:
 
           # (B) Show raw output for debugging
           echo "===== RAW BQ OUTPUT (CSV) ====="
-          cat validation.csv
+        - cat validation.csv
+        + cat validation.csv 2>&1 || true
           echo "==============================="
 
           # (C) Parse numeric count (skip header), trim whitespace
