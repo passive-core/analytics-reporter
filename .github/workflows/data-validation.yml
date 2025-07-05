@@ -18,13 +18,11 @@ jobs:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
-          # the full JSON blob you stored in your GCP_SA_KEY secret
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       # 3) Run the count query
       - name: Run validation query
         run: |
-          # run the count in CSV mode (no headers, no prompts):
           bq query \
             --nouse_legacy_sql \
             --format=csv \
@@ -32,12 +30,10 @@ jobs:
              FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
             > validation.csv
 
-          # show raw output for debugging
           echo "===== RAW BQ OUTPUT (CSV) ====="
           cat validation.csv
           echo "==============================="
 
-          # skip the header line, grab the first data line
           ROWS=$(tail -n +2 validation.csv | head -1)
           echo "Parsed ROWS=$ROWS"
 
