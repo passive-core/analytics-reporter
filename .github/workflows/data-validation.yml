@@ -25,23 +25,30 @@ jobs:
 
       - name: Run validation query and assert > 0 rows
         run: |
-          bq --project_id=neuraflow-e32ab query \
-            --nouse_legacy_sql \
-            --format=csv \
-            'SELECT COUNT(*) AS row_count
-             FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
+          set -eo pipefail
+
+          # (A) Run the count query, write CSV (header + one data line)
+          bq --project_id=${{ env.GCP_PROJECT }} query \
+             --nouse_legacy_sql \
+             --format=csv \
+             'SELECT COUNT(*) AS row_count
+              FROM `neuralflow-e32ab.dns_logs.validation_test`; ' \
             > validation.csv
 
-          echo "===== RAW BQ OUTPUT (CSV + ERRORS) ====="
-          cat validation.csv 2>&1 || true
-          echo "======================================="
+          # (B) Show raw output for debugging
+          echo "===== RAW BQ OUTPUT (CSV) ====="
+          cat validation.csv
+          echo "==============================="
 
-          ROWS=$(tail -n +2 validation.csv | head -1)
+          # (C) Parse numeric count (skip header), trim whitespace
+          ROWS=$(tail -n +2 validation.csv | head -n 1 | xargs)
           echo "Parsed ROWS=$ROWS"
 
-          if [[ -z "$ROWS" || "$ROWS" -lt 1 ]]; then
+          # (D) Fail if under 1
+          if [ "$ROWS" -lt 1 ]; then
             echo "❌ No rows found in validation_test!"
             exit 1
           fi
 
+          # (E) Success
           echo "✅ Found $ROWS rows in validation_test."
