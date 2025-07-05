@@ -1,14 +1,17 @@
 name: BigQuery Data Validation
 
 on:
+  # run on every push to main
   push:
     branches:
       - main
-    paths:
-      - '.github/workflows/data-validation.yml'
+
+  # still validate on PRs that touch the workflow file
   pull_request:
     paths:
       - '.github/workflows/data-validation.yml'
+
+  # allow manual “Run workflow” dispatch
   workflow_dispatch: {}
 
 
