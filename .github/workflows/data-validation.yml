@@ -29,7 +29,8 @@ jobs:
           bq --project_id=neuraflow-e32ab query \
             --nouse_legacy_sql \
             --format=csv \
-            'SELECT COUNT(*) AS row_count FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
+            'SELECT COUNT(*) AS row_count
+             FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
             > validation.csv || true
 
       # 4) Dump raw BQ output for debugging
