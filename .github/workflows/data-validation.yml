@@ -8,11 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write
-      contents: read
-    
+      id-token: write    # needed to fetch OIDC ID token
+      contents: read     # for checkout
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Authenticate via Workload Identity
         uses: google-github-actions/auth@v1
@@ -27,7 +28,7 @@ jobs:
 
       - name: Run validation query and assert > 0 rows
         env:
-          GCP_PROJECT: your-gcp-project-id
+          GCP_PROJECT: neuraflow-e32ab
         run: |
           bq --project_id="${{ env.GCP_PROJECT }}" query \
             --nouse_legacy_sql \
