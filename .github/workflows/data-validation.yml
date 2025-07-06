@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write         # ← required for OIDC
-      contents: read          # ← so you can checkout your code
+      id-token: write        
+      contents: read          
 
     steps:
       - name: Checkout code
@@ -23,7 +23,6 @@ jobs:
 
       - name: Run validation query and assert > 0 rows
         run: |
-          # (A) Run the count query, write CSV (header + one data line)
           bq --project_id="${{ env.GCP_PROJECT }}" query \
              --nouse_legacy_sql \
              --format=csv \
@@ -31,16 +30,13 @@ jobs:
               FROM `neuralflow-e32ab.dns_logs.validation_test`;' \
           > validation.csv
 
-          # (B) Show raw output for debugging
           echo "===== RAW BQ OUTPUT (CSV) ====="
           cat validation.csv 2>&1 || true
           echo "==============================="
 
-          # (C) Parse numeric count (skip header), trim whitespace
           ROWS=$(tail -n +2 validation.csv | head -n 1 | xargs)
           echo "Parsed ROWS=$ROWS"
-
-          # (D) Fail if under 1
+          
           if [ "$ROWS" -lt 1 ]; then
             echo "❌ No rows found in validation_test!"
             exit 1
