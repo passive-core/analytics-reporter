@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write        
-      contents: read          
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout code
@@ -18,29 +18,32 @@ jobs:
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: "projects/57158054598/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions"
-          service_account: "analytics-reporter@neuralflow-e32ab.iam.gserviceaccount.com"
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Install gcloud CLI
+        run: |
+          curl https://sdk.cloud.google.com | bash > /dev/null
+          source $HOME/google-cloud-sdk/path.bash.inc
 
       - name: Run validation query and assert > 0 rows
+        env:
+          GCP_PROJECT: your-gcp-project-id
         run: |
           bq --project_id="${{ env.GCP_PROJECT }}" query \
-             --nouse_legacy_sql \
-             --format=csv \
-             'SELECT COUNT(*) AS row_count
-              FROM `neuralflow-e32ab.dns_logs.validation_test`;' \
-          > validation.csv
+            --nouse_legacy_sql \
+            --format=csv \
+            'SELECT COUNT(*) AS row_count
+             FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
+            > validation.csv
 
           echo "===== RAW BQ OUTPUT (CSV) ====="
           cat validation.csv 2>&1 || true
           echo "==============================="
 
-          ROWS=$(tail -n +2 validation.csv | head -n 1 | xargs)
-          echo "Parsed ROWS=$ROWS"
-          
-          if [ "$ROWS" -lt 1 ]; then
-            echo "❌ No rows found in validation_test!"
+          ROWS=$(tail -n1 validation.csv)
+          if [ "$ROWS" -eq "0" ]; then
+            echo "❌ No rows returned!"
             exit 1
+          else
+            echo "✅ $ROWS rows returned."
           fi
-
-          # (E) Success
-          echo "✅ Found $ROWS rows in validation_test."
