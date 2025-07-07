@@ -1,13 +1,6 @@
 name: BigQuery Data Validation
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - .github/workflows/data-validation.yml
-  pull_request:
-    paths:
-      - .github/workflows/data-validation.yml
   workflow_dispatch:
 
 jobs:
@@ -25,7 +18,7 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           workload_identity_provider: ${{ secrets.GCP_WI_PROVIDER }}
-          service_account: ${{ secrets.GCP_SA_EMAIL }}
+          service_account:             ${{ secrets.GCP_SA_EMAIL }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
@@ -36,14 +29,16 @@ jobs:
         env:
           GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
         run: |
-          bq --project_id="${GCP_PROJECT}" query \
-            --nouse_legacy_sql \
-            --format=csv \
-            'SELECT COUNT(*) AS row_count FROM `'"${GCP_PROJECT}"'.dns_logs.validation_test`;' \
-            > validation.csv
+          bq --project_id="$GCP_PROJECT" query \
+             --nouse_legacy_sql \
+             --format=csv \
+          'SELECT COUNT(*) AS row_count
+           FROM `'"$GCP_PROJECT"'.dns_logs.validation_test`;' \
+          > validation.csv
+
           ROWS=$(tail -n1 validation.csv)
-          if [ "${ROWS}" -eq "0" ]; then
-            echo "No rows returned!"
+          if [ "$ROWS" -eq "0" ]; then
+            echo "❌ No rows returned!"
             exit 1
           fi
 
@@ -56,11 +51,11 @@ jobs:
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: ${{ secrets.SMTP_HOST }}
-          server_port: ${{ secrets.SMTP_PORT }}
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "BigQuery validation failed"
-          body: |
+          server_port:    ${{ secrets.SMTP_PORT }}
+          username:       ${{ secrets.SMTP_USERNAME }}
+          password:       ${{ secrets.SMTP_PASSWORD }}
+          subject:        "BigQuery validation failed"
+          body:           |
             The BigQuery data validation job in ${{ secrets.GCP_PROJECT }} failed.
             Workflow: ${{ github.workflow }} run ${{ github.run_id }}.
-          to: ${{ secrets.ALERT_RECIPIENTS }}
+          to:             ${{ secrets.ALERT_RECIPIENTS }}
