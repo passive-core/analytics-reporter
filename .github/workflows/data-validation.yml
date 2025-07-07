@@ -21,7 +21,7 @@ jobs:
         with:
           workload_identity_provider: ${{ secrets.GCP_WI_PROVIDER }}
           service_account:         ${{ secrets.GCP_SA_EMAIL }}
-
+          audience:                 https://github.com/passive-core/analytics-reporter
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
