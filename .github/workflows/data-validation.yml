@@ -1,4 +1,3 @@
-cat << 'EOF' > .github/workflows/data-validation.yml
 name: BigQuery Data Validation
 
 on:
@@ -65,4 +64,3 @@ jobs:
             The BigQuery data validation job in ${{ secrets.GCP_PROJECT }} failed.
             Workflow: ${{ github.workflow }} run ${{ github.run_id }}.
           to: ${{ secrets.ALERT_RECIPIENTS }}
-EOF
