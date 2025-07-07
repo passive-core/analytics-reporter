@@ -29,18 +29,19 @@ jobs:
 
       - name: Run validation query and assert > 0 rows
         env:
-        GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
         run: |
-         bq --project_id="${GCP_PROJECT}" query --nouse_legacy_sql --format=csv \
-          "SELECT COUNT(*) AS row_count FROM \`${GCP_PROJECT}.dns_logs.validation_test\`;" > validation.csv
+          bq --project_id="${GCP_PROJECT}" query --nouse_legacy_sql --format=csv \
+            "SELECT COUNT(*) AS row_count FROM \`${GCP_PROJECT}.dns_logs.validation_test\`;" > validation.csv
 
-         ROWS=$(tail -n1 validation.csv)
-         if [ "$ROWS" -eq "0" ]; then
-          echo "❌ No rows returned!"
-          exit 1
-         else
-          echo "✅ $ROWS rows returned."
-         fi
+          ROWS=$(tail -n1 validation.csv)
+          if [ "$ROWS" -eq "0" ]; then
+            echo "❌ No rows returned!"
+            exit 1
+          else
+            echo "✅ $ROWS rows returned."
+          fi
+
 
   notify:
     if: failure()
