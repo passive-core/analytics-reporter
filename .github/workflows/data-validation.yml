@@ -1,15 +1,22 @@
+cat << 'EOF' > .github/workflows/data-validation.yml
 name: BigQuery Data Validation
 
 on:
+  push:
+    branches: [ main ]
+    paths:
+      - .github/workflows/data-validation.yml
+  pull_request:
+    paths:
+      - .github/workflows/data-validation.yml
   workflow_dispatch:
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-
     permissions:
-      id-token: write    # needed to fetch OIDC ID token
-      contents: read     # for checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout code
@@ -18,33 +25,44 @@ jobs:
       - name: Authenticate via Workload Identity
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: "projects/57158054598/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
-          service_account: "analytics-bot@neuraflow-e32ab.iam.gserviceaccount.com"
+          workload_identity_provider: ${{ secrets.GCP_WI_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: ${{ env.GCP_PROJECT }}
+          project_id: ${{ secrets.GCP_PROJECT }}
 
       - name: Run validation query and assert > 0 rows
         env:
-          GCP_PROJECT: neuraflow-e32ab
+          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
         run: |
-          bq --project_id="${{ env.GCP_PROJECT }}" query \
+          bq --project_id="${GCP_PROJECT}" query \
             --nouse_legacy_sql \
             --format=csv \
-            'SELECT COUNT(*) AS row_count
-             FROM `neuraflow-e32ab.dns_logs.validation_test`;' \
+            'SELECT COUNT(*) AS row_count FROM `'"${GCP_PROJECT}"'.dns_logs.validation_test`;' \
             > validation.csv
-
-          echo "===== RAW BQ OUTPUT (CSV) ====="
-          cat validation.csv 2>&1 || true
-          echo "==============================="
-
           ROWS=$(tail -n1 validation.csv)
-          if [ "$ROWS" -eq "0" ]; then
-            echo "❌ No rows returned!"
+          if [ "${ROWS}" -eq "0" ]; then
+            echo "No rows returned!"
             exit 1
-          else
-            echo "✅ $ROWS rows returned."
           fi
+
+  notify:
+    if: failure()
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Send alert email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "BigQuery validation failed"
+          body: |
+            The BigQuery data validation job in ${{ secrets.GCP_PROJECT }} failed.
+            Workflow: ${{ github.workflow }} run ${{ github.run_id }}.
+          to: ${{ secrets.ALERT_RECIPIENTS }}
+EOF
