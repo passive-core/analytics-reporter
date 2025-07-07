@@ -1,60 +1,42 @@
 name: BigQuery Data Validation
 
 on:
+  workflow_dispatch:    
+  schedule:
+    - cron: '0 9 * * *' 
   push:
-    branches: [ main ]
     paths:
-      - .github/workflows/data-validation.yml
-  workflow_dispatch:
+      - 'data-pipelines/**' 
 
 jobs:
   validate:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write       # for Workload Identity
-      contents: read        # to fetch checkout
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Authenticate via Workload Identity
-        uses: google-github-actions/auth@v1
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WI_PROVIDER }}
-          service_account:                ${{ secrets.GCP_SA_EMAIL }}
-          audience:                       https://github.com/passive-core/analytics-reporter
-
-      - name: Set up Cloud SDK
+      - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT }}
 
+      - name: Authenticate with service account
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
       - name: Run validation query and assert > 0 rows
-        env:
-          GCP_PROJECT: ${{ secrets.GCP_PROJECT }}
         run: |
-          bq --project_id="${GCP_PROJECT}" query --nouse_legacy_sql --format=csv \
-            "SELECT COUNT(*) AS row_count FROM \`${GCP_PROJECT}.dns_logs.validation_test\`;" > validation.csv
+          bq --project_id="${{ secrets.GCP_PROJECT }}" \
+            query --nouse_legacy_sql --format=csv \
+            "SELECT COUNT(*) AS row_count FROM \`${{ secrets.GCP_PROJECT }}.dns_logs.validation_test\`;" \
+            > validation.csv
 
           ROWS=$(tail -n1 validation.csv)
           if [ "$ROWS" -eq "0" ]; then
-            echo "⚠️ No rows returned, but we’ll treat that as success."
-            exit 0
+            echo "❌ No rows returned!"
+            exit 1
           else
             echo "✅ $ROWS rows returned."
           fi
-
-      - name: Send alert email
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: ${{ secrets.SMTP_HOST }}
-          server_port:    ${{ secrets.SMTP_PORT }}
-          username:       ${{ secrets.SMTP_USERNAME }}
-          password:       ${{ secrets.SMTP_PASSWORD }}
-          from:           ${{ secrets.SMTP_USERNAME }}
-          to:             ${{ secrets.ALERT_RECIPIENTS }}
-          subject:        "BigQuery validation failed"
-          body: |
-            The BigQuery data validation job in `${{ secrets.GCP_PROJECT }}` failed.
-            Workflow: ${{ github.workflow }} run ${{ github.run_id }}.
