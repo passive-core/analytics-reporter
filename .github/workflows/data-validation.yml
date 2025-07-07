@@ -65,7 +65,3 @@ jobs:
           body:           |
             The BigQuery data validation job in ${{ secrets.GCP_PROJECT }} failed.
             Workflow: ${{ github.workflow }} run ${{ github.run_id }}.
-
-git add .github/workflows/data-validation.yml
-git commit -m "fix: full BigQuery validation workflow + email alerts"
-git push origin main
