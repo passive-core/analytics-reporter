@@ -30,6 +30,10 @@ jobs:
           create_credentials_file: true
           export_environment_variables: true
 
+      - name: Debug project secret
+        run: echo "GCP provider secret is '${{ secrets.GCP_WI_PROVIDER }}'"
+
+
       - name: Run validation query
         id: validate
         run: |
