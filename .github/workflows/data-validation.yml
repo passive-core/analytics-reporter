@@ -57,4 +57,22 @@ jobs:
           username:       ${{ secrets.SMTP_USERNAME }}
           password:       ${{ secrets.SMTP_PASSWORD }}
           subject:        "BQ Validation — ${{ job.status }}"
-          body:
+          body: |
+            BigQuery validation finished with ${{ steps.validate.outputs.row_count }} rows.
+          to:             ${{ secrets.ALERT_RECIPIENT }}
+          from:           CI Bot <ci-bot@example.com>
+
+      - name: Post Slack alert
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          COUNT="${{ steps.validate.outputs.row_count }}"
+          PAYLOAD=$(jq -n \
+            --arg status "$STATUS" \
+            --arg count "$COUNT" \
+            '{text: "BigQuery Validation: \($status) — Rows: \($count)"}')
+          curl -X POST \
+            -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
