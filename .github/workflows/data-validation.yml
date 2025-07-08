@@ -16,7 +16,6 @@ on:
          uses: google-github-actions/setup-gcloud@v1
          with:
            version: latest
-+          # no auth here—this just installs the CLI
 
        - name: Authenticate with service account
          uses: google-github-actions/auth@v1
