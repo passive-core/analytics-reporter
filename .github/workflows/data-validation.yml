@@ -31,8 +31,7 @@ jobs:
           export_environment_variables: true
 
       - name: Debug project secret
-        run: echo "GCP provider secret is '${{ secrets.GCP_WI_PROVIDER }}'"
-
+        run: echo "Project ID is '${{ secrets.GCP_WI_PROVIDER }}'"
 
       - name: Run validation query
         id: validate
@@ -63,7 +62,7 @@ jobs:
           subject:        "BQ Validation — ${{ job.status }}"
           body: |
             BigQuery validation finished with ${{ steps.validate.outputs.row_count }} rows.
-          to:             ${{ secrets.ALERT_RECIPIENT }}
+          to:             ${{ secrets.ALERT_RECIPIENTS }}
           from:           CI Bot <ci-bot@example.com>
 
       - name: Post Slack alert
