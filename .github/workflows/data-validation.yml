@@ -8,32 +8,29 @@ on:
     paths:
       - 'data-pipelines/**'
   jobs:
-   validate:
+     validate:
      runs-on: ubuntu-latest
 
      steps:
-       - name: Set up gcloud CLI
-         uses: google-github-actions/setup-gcloud@v1
-         with:
-           version: latest
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
 
-       - name: Authenticate with service account
-         uses: google-github-actions/auth@v1
-         with:
--          credentials_json: ${{ secrets.GCP_SA_KEY }}
-+          credentials_json: ${{ secrets.GCP_SA_KEY }}
-+          create_credentials_file: true
-+          export_environment_variables: true
+      - name: Authenticate with service account
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          create_credentials_file: true
+          export_environment_variables: true
 
-       - name: Run validation query
-         id: validate
-         run: |
--          bq --project_id="${{ secrets.GCP_WI_PROJECT }}" \
-+          bq --project_id="${{ secrets.GCP_WI_PROVIDER }}" \
-             query --nouse_legacy_sql --format=csv \
--            "SELECT COUNT(*) AS row_count FROM \`${{ secrets.GCP_WI_PROJECT }}.dns_logs.validation_test\`;" \
-+            "SELECT COUNT(*) AS row_count FROM \`${{ secrets.GCP_WI_PROVIDER }}.dns_logs.validation_test\`;" \
-             > validation.csv
+      - name: Run validation query
+        id: validate
+        run: |
+          bq --project_id="${{ secrets.GCP_WI_PROVIDER }}" \
+            query --nouse_legacy_sql --format=csv \
+            "SELECT COUNT(*) AS row_count FROM \`${{ secrets.GCP_WI_PROVIDER }}.dns_logs.validation_test\`;" \
+            > validation.csv
 
           ROWS=$(tail -n1 validation.csv)
           echo "row_count=$ROWS" >> $GITHUB_OUTPUT
@@ -44,6 +41,7 @@ on:
           else
             echo "✅ $ROWS rows returned."
           fi
+
 
       - name: Send email notification
         if: always()
