@@ -7,11 +7,17 @@ on:
   push:
     paths:
       - 'data-pipelines/**'
-  jobs:
-     validate:
-     runs-on: ubuntu-latest
 
-     steps:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      row_count: ${{ steps.validate.outputs.row_count }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
@@ -42,7 +48,6 @@ on:
             echo "✅ $ROWS rows returned."
           fi
 
-
       - name: Send email notification
         if: always()
         uses: dawidd6/action-send-mail@v3
@@ -52,22 +57,4 @@ on:
           username:       ${{ secrets.SMTP_USERNAME }}
           password:       ${{ secrets.SMTP_PASSWORD }}
           subject:        "BQ Validation — ${{ job.status }}"
-          body: |
-            Validation finished with ${{ steps.validate.outputs.row_count }} rows.
-          to:             ${{ secrets.ALERT_RECIPIENT }}
-          from:           CI Bot <ci-bot@example.com>
-
-      - name: Post Slack alert
-        if: always()
-        run: |
-          STATUS="${{ job.status }}"
-          COUNT="${{ steps.validate.outputs.row_count }}"
-          PAYLOAD=$(jq -n \
-            --arg status "$STATUS" \
-            --arg count "$COUNT" \
-            '{text: "BigQuery Validation: \($status) — Rows: \($count)"}')
-          curl -X POST \
-            -H 'Content-type: application/json' \
-            --data "$PAYLOAD" \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
-
+          body:
