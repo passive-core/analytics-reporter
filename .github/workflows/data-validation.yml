@@ -1,4 +1,4 @@
-name: BigQuery Data Validation
+name: BigQuery Data Validation & Alerts
 
 on:
   workflow_dispatch:
@@ -11,6 +11,8 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    outputs:
+      row_count: ${{ steps.validate.outputs.row_count }}
 
     steps:
       - name: Checkout code
@@ -19,14 +21,15 @@ jobs:
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: ${{ secrets.GCP_WI_PROJECT }}       # your neuraflow-e32ab project
-          
+          project_id: ${{ secrets.GCP_WI_PROJECT }}
+
       - name: Authenticate with service account
         uses: google-github-actions/auth@v1
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}      # your JSON key secret
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Run validation query and assert > 0 rows
+      - name: Run validation query
+        id: validate
         run: |
           bq --project_id="${{ secrets.GCP_WI_PROJECT }}" \
             query --nouse_legacy_sql --format=csv \
@@ -34,9 +37,40 @@ jobs:
             > validation.csv
 
           ROWS=$(tail -n1 validation.csv)
+          echo "row_count=$ROWS" >> $GITHUB_OUTPUT
+
           if [ "$ROWS" -eq "0" ]; then
             echo "❌ No rows returned!"
             exit 1
           else
             echo "✅ $ROWS rows returned."
           fi
+
+      - name: Send email notification
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_HOST }}
+          server_port:    ${{ secrets.SMTP_PORT }}
+          username:       ${{ secrets.SMTP_USERNAME }}
+          password:       ${{ secrets.SMTP_PASSWORD }}
+          subject:        "BQ Validation — ${{ job.status }}"
+          body: |
+            Validation finished with ${{ steps.validate.outputs.row_count }} rows.
+          to:             ${{ secrets.ALERT_RECIPIENT }}
+          from:           CI Bot <ci-bot@example.com>
+
+      - name: Post Slack alert
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          COUNT="${{ steps.validate.outputs.row_count }}"
+          PAYLOAD=$(jq -n \
+            --arg status "$STATUS" \
+            --arg count "$COUNT" \
+            '{text: "BigQuery Validation: \($status) — Rows: \($count)"}')
+          curl -X POST \
+            -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+
