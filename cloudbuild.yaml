@@ -1,0 +1,20 @@
+steps:
+# 1) Build a Docker image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build','-t','gcr.io/$PROJECT/analytics-reporter:$SHORT_SHA','.']
+
+# 2) Push it
+images:
+- 'gcr.io/$PROJECT/analytics-reporter:$SHORT_SHA'
+
+# 3) Deploy to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args:
+  - run
+  - deploy
+  - analytics-reporter
+  - --image=gcr.io/$PROJECT/analytics-reporter:$SHORT_SHA
+  - --platform=managed
+  - --region=us-central1
+  - --quiet
