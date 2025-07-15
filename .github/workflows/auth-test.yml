@@ -1,0 +1,16 @@
+name: GCP Auth Test
+on: [workflow_dispatch]
+jobs:
+  test-auth:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: github-actions-sa@neuraflow-e32ab.iam.gserviceaccount.com
+      - name: Verify access
+        run: gcloud projects list
