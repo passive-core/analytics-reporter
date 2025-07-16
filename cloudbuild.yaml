@@ -1,8 +1,3 @@
-substitutions:
-  _SHORT_SHA: "${_SHORT_SHA}"
-
-
-steps:
 - name: "gcr.io/cloud-builders/docker"
   args:
     - build
@@ -14,6 +9,3 @@ images:
     _SHORT_SHA: "${_SHORT_SHA}"
   substitutions:
     _SHORT_SHA: "${_SHORT_SHA}"
-substitutions:
-  _SHORT_SHA: "${_SHORT_SHA}"
-- "us-central1-docker.pkg.dev/${PROJECT_ID}/analytics-reports:${SHORT_SHA}"
