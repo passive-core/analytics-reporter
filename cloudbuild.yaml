@@ -1,9 +1,9 @@
 steps:
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - build
-      - '-t'
-      - "us-central1-docker.pkg.dev/$PROJECT_ID/analytics-reports:\$COMMIT_SHA"
-      - .
+- name: "gcr.io/cloud-builders/docker"
+  args:
+    - build
+    - -t
+    - "us-central1-docker.pkg.dev/${PROJECT_ID}/analytics-reports:${SHORT_SHA}"
+    - .
 images:
-  - "us-central1-docker.pkg.dev/$PROJECT_ID/analytics-reports:\$COMMIT_SHA"
+- "us-central1-docker.pkg.dev/${PROJECT_ID}/analytics-reports:${SHORT_SHA}"
