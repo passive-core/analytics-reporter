@@ -6,8 +6,8 @@ steps:
   args:
     - build
     - -t
-    - "us-central1-docker.pkg.dev/${PROJECT_ID}/analytics-reports:${_SHORT_SHA}"
+    - "us-central1-docker.pkg.dev/${PROJECT_ID}/analytics-reporter:${_SHORT_SHA}"
     - "."
 
 images:
-- "us-central1-docker.pkg.dev/${PROJECT_ID}/analytics-reports:${_SHORT_SHA}"
+- "us-central1-docker.pkg.dev/${PROJECT_ID}/analytics-reporter:${_SHORT_SHA}"
