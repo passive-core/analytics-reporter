@@ -1,3 +1,6 @@
+substitutions:
+  _SHORT_SHA: "'unset'"
+
 steps:
 - name: "gcr.io/cloud-builders/docker"
   args:
