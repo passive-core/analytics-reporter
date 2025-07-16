@@ -1,0 +1,15 @@
+{
+  "createTime": "2025-07-16T00:59:21.547997555Z",
+  "filename": "cloudbuild.yaml",
+  "github": {
+    "name": "analytics-reporter",
+    "owner": "passive-core",
+    "push": {
+      "branch": "^main$"
+    }
+  },
+  "id": "340fb083-ad8c-4589-a083-f756a03f4eea",
+  "name": "cb-build",
+  "resourceName": "projects/neuraflow-e32ab/locations/global/triggers/340fb083-ad8c-4589-a083-f756a03f4eea",
+  "serviceAccount": "projects/neuraflow-e32ab/serviceAccounts/cb-build-sa@neuraflow-e32ab.iam.gserviceaccount.com"
+}

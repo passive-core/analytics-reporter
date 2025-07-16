@@ -1,0 +1,15 @@
+{
+  "createTime": "2025-07-12T02:51:21.439860454Z",
+  "filename": "cloudbuild.yaml",
+  "github": {
+    "name": "product-sync",
+    "owner": "passive-core",
+    "push": {
+      "branch": "^main$"
+    }
+  },
+  "id": "e0eb2f19-f1b2-4c15-a5f9-e3de0143fec0",
+  "name": "auto-build-product-sync",
+  "resourceName": "projects/neuraflow-e32ab/locations/global/triggers/e0eb2f19-f1b2-4c15-a5f9-e3de0143fec0",
+  "serviceAccount": "projects/neuraflow-e32ab/serviceAccounts/cloud-build-trigger-sa@neuraflow-e32ab.iam.gserviceaccount.com"
+}

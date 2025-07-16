@@ -1,0 +1,15 @@
+{
+  "createTime": "2025-06-28T15:11:06.500008429Z",
+  "filename": "cloudbuild.yaml",
+  "github": {
+    "name": "PassiveCore-Dashboard",
+    "owner": "passive-core",
+    "push": {
+      "branch": "^main$"
+    }
+  },
+  "id": "5d8cccdf-4f41-4f6a-af10-c6f04e2219de",
+  "name": "auto-deploy-main",
+  "resourceName": "projects/neuraflow-e32ab/locations/global/triggers/5d8cccdf-4f41-4f6a-af10-c6f04e2219de",
+  "serviceAccount": "projects/neuraflow-e32ab/serviceAccounts/cloud-build-trigger-sa@neuraflow-e32ab.iam.gserviceaccount.com"
+}
