@@ -1,3 +1,6 @@
+substitutions:
+  _SHORT_SHA: "${_SHORT_SHA}"
+
 - name: "gcr.io/cloud-builders/docker"
   args:
     - build
