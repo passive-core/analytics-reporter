@@ -1,29 +1,8 @@
-# 1) Build stage: compile your React app
-FROM node:18-alpine AS build
-WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm ci
+FROM golang:1.21-alpine AS builder
+WORKDIR /app
 COPY . .
-RUN npm run build
+RUN go build -o analytics-reporter ./cmd/analytics-reporter
 
-# 2) Serve stage: install 'serve' and your Express health server
-FROM node:18-alpine AS serve
-WORKDIR /usr/src/app
-
-# Install runtime deps
-RUN npm install -g serve
-COPY package*.json ./
-RUN npm ci --only=production
-# copy your build output
-COPY --from=build /usr/src/app/build ./build
-# copy the health.js server
-COPY health.js ./
-
-EXPOSE 8080
-
-# Launch your Express health/server instead of 'serve'
-CMD ["node", "health.js"]
-
-USER appuser
-
-CMD ["serve", "-s", "build", "-l", "8080"]
+FROM gcr.io/distroless/base
+COPY --from=builder /app/analytics-reporter /analytics-reporter
+ENTRYPOINT ["/analytics-reporter"]
